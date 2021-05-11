@@ -1,5 +1,3 @@
-# FastAPI + PostgreSQL production ready setup
-
 **database setup:**
 
 take a look at `app/core/config.py` and add necessary db credentials
