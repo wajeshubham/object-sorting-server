@@ -2,6 +2,7 @@ alembic==1.6.2
 click==7.1.2
 fastapi==0.65.0
 greenlet==1.1.0
+gunicorn==20.1.0
 h11==0.12.0
 importlib-metadata==4.0.1
 Mako==1.1.4
