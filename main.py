@@ -32,7 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/data")
 def get_prods(db: Session=Depends(get_db)):
     product_list=db.query(Product).order_by(asc(Product.order)).all()
     return product_list
