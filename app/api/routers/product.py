@@ -1,64 +1,37 @@
-from fastapi import APIRouter,WebSocket, Depends, status, Request
-from sqlalchemy.orm import Session
-from starlette.responses import Response
+from datetime import datetime
+from typing import List
 
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.models.product import Product
+from app.api.schemas.product import ProductPostObj
 from app.api.deps import get_db
+
+from services.product import get_prods, get_prod_by_id
 
 router = APIRouter()
 
-# @router.websocket("/ws")
-# # @router.get("/data")
-# async def send_data(websocket:WebSocket):
-#     await websocket.accept()
-#     while True:
-#         try:
-#             await websocket.receive_text()
-#             data=[
-#                     {
-#                         "name": "Page A",
-#                         "uv": 4000,
-#                         "pv": 2400,
-#                         "amt": 2400,
-#                     },
-#                     {
-#                         "name": "Page B",
-#                         "uv": 3000,
-#                         "pv": 1398,
-#                         "amt": 2210,
-#                     },
-#                     {
-#                         "name": "Page C",
-#                         "uv": 2000,
-#                         "pv": 9800,
-#                         "amt": 2290,
-#                     },
-#                     {
-#                         "name": "Page D",
-#                         "uv": 2780,
-#                         "pv": 3908,
-#                         "amt": 2000,
-#                     },
-#                     {
-#                         "name": "Page E",
-#                         "uv": 1890,
-#                         "pv": 4800,
-#                         "amt": 2181,
-#                     },
-#                     {
-#                         "name": "Page F",
-#                         "uv": 2390,
-#                         "pv": 3800,
-#                         "amt": 2500,
-#                     },
-#                     {
-#                         "name": "Page G",
-#                         "uv": 3490,
-#                         "pv": 4300,
-#                         "amt": 2100,
-#                     },
-#                 ]
-#             await websocket.send_json(data)
-#         except Exception as e:
-#             print(e)
-#             break
-#     print("Bye...")
+@router.post("/products")
+def create_prods(data:List[ProductPostObj],db:Session=Depends(get_db)):
+    for i in data:
+        product=Product(**dict(i))
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+    return {"res":"created successfully"}
+
+@router.get("/products")
+def get_all_prods(db:Session=Depends(get_db)):
+    prods=get_prods(db)
+    return prods
+
+@router.put("/product/{id}")
+def increase_count( id:str,db:Session=Depends(get_db)):
+    product=get_prod_by_id(db,id)
+    product.count+=1
+    product.updated_at=datetime.now()
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return {"prod":product}
