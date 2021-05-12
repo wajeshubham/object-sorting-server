@@ -1,9 +1,11 @@
+from typing import Dict, List, Optional
 from fastapi import FastAPI, Request, status,WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.params import Depends
 from fastapi.responses import JSONResponse
+from pydantic.main import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import asc, desc
 from app.api.routers import product
@@ -31,6 +33,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class ProductPostObj(BaseModel):
+    deleted_at:Optional[datetime]=None
+    created_at: datetime
+    color: str
+    shape: str
+    type: str
+    order: int
+    updated_at: datetime
+    id: str
+    count:int
+    box_type: str
+
+@app.post("/products")
+def create_prods(data:List[ProductPostObj],db:Session=Depends(get_db)):
+    for i in data:
+        product=Product(**dict(i))
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+    return {"res":"created successfully"}
+
+@app.get("/products")
+def get_all_prods(db:Session=Depends(get_db)):
+    prods=get_prods(db)
+    return prods
+
 
 def get_prods(db: Session=Depends(get_db)):
     product_list=db.query(Product).order_by(asc(Product.order)).all()
