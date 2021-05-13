@@ -26,7 +26,7 @@ def get_all_prods(db:Session=Depends(get_db)):
     prods=get_prods(db)
     return prods
 
-@router.put("/product/{id}")
+@router.post("/product/{id}")
 def increase_count( id:str,db:Session=Depends(get_db)):
     product=get_prod_by_id(db,id)
     product.count+=1
@@ -35,3 +35,14 @@ def increase_count( id:str,db:Session=Depends(get_db)):
     db.commit()
     db.refresh(product)
     return {"prod":product}
+
+@router.post("/products/reset-count")
+def reset_count(db:Session=Depends(get_db)):
+    products=get_prods(db)
+    for product in products:
+        product.count=0
+        product.updated_at=datetime.now()
+        db.add(product)
+        db.commit()
+        db.refresh(product)
+    return {"res":"count reset successful"}

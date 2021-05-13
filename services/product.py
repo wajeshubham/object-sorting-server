@@ -17,3 +17,6 @@ def get_prod_by_id(db:Session, id:str):
 def get_last_added_prod(db:Session):
     product=db.query(Product).order_by(desc(Product.updated_at)).all()
     return product[0]
+
+def get_box_count(db:Session):
+    product_list=db.query(Product).order_by(asc(Product.order)).all()
